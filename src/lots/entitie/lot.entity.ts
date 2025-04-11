@@ -15,4 +15,6 @@ export class Lot {
   @CreateDateColumn({ name: 'criado_em' })
   created_at: Date;
 
+  @OneToMany(() => Invoice, (invoice) => invoice.lot)
+  invoices: Invoice[];
 }
