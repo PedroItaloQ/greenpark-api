@@ -8,7 +8,7 @@ import {
   Index,
 } from 'typeorm';
 import { Lot } from '../../lots/entitie/lot.entity';
-import { Import } from '../../interface/import.entity';
+import { Import } from '../../imports/entitie/import.entity';
 
 @Entity('boletos')
 export class Invoice {
@@ -30,4 +30,17 @@ export class Invoice {
   @Column({ name: 'ativo', default: true })
   active: boolean;
 
+  @CreateDateColumn({ name: 'criado_em' })
+  created_at: Date;
+
+  @ManyToOne(() => Lot, (lot) => lot.invoices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id_lote' })
+  lot: Lot;
+
+  @ManyToOne(() => Import, (imp) => imp.invoices, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id_importacao' })
+  import: Import;
+
+  @Column({ default: 0 })
+  order: number;
 }
