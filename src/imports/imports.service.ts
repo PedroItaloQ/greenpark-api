@@ -23,7 +23,7 @@ export class ImportsService {
 
     @InjectRepository(Lot)
     private lotRepo: Repository<Lot>,
-  ) {}
+  ) { }
 
   async create(dto: CreateImportDto): Promise<Import> {
     const imp = this.importRepo.create(dto);
@@ -95,12 +95,16 @@ export class ImportsService {
       const outputDir = path.join(process.cwd(), 'boletos-pdf');
       if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
-      for (let i = 0; i < boletos.length; i++) {
+      const numPages = pdfDoc.getPageCount();
+      const boletosValidos = boletos.slice(0, numPages);
+
+      for (let i = 0; i < boletosValidos.length; i++) {
+        const boleto = boletosValidos[i];
         const newPdf = await PDFDocument.create();
         const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
         newPdf.addPage(copiedPage);
         const newPdfBytes = await newPdf.save();
-        fs.writeFileSync(path.join(outputDir, `${boletos[i].id}.pdf`), newPdfBytes);
+        fs.writeFileSync(path.join(outputDir, `${boleto.id}.pdf`), newPdfBytes);
       }
 
       return {
