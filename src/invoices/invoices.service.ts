@@ -62,30 +62,30 @@ export class InvoicesService {
     }
   
     return query.getMany();
-  }  
+  }
 
   async gerarRelatorioPDF(filter: FilterInvoiceDto): Promise<string> {
     const boletos = await this.findAll(filter);
-
-    const PDFDocument = (await import('pdfkit')).default;
-    const getStream = (await import('get-stream')).default;
-
-    const doc = new PDFDocument();
+  
+    const PDFKit = require('pdfkit');
+    const { default: getStream } = await import('get-stream');
     const stream = new PassThrough();
+  
+    const doc = new PDFKit();
     doc.pipe(stream);
-
+  
     doc.fontSize(14).text('Relatório de Boletos', { align: 'center' });
     doc.moveDown();
-
+  
     boletos.forEach((b) => {
       doc.fontSize(10).text(
         `${b.id} | ${b.payer_name} | ${b.lot.name} | R$ ${b.amount} | ${b.digitable_line}`,
       );
     });
-
+  
     doc.end();
-
+  
     const buffer = await getStream.buffer(stream);
     return buffer.toString('base64');
-  }
+  }  
 }
