@@ -95,6 +95,8 @@ body:
 
     ) 
 
+  6. Na pasta uploads, eu deixei um csv e um pdf para teste (Apenas tome cuidado com o id, para nao ocasionar error)
+
 ---
 
 ## Observações Importantes
