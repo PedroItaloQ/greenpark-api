@@ -19,7 +19,7 @@ export class InvoicesService {
 
     @InjectRepository(Import)
     private importRepo: Repository<Import>,
-  ) {}
+  ) { }
 
   async create(dto: CreateInvoiceDto): Promise<Invoice> {
     const lot = await this.lotRepo.findOneBy({ id: dto.lot_id });
@@ -44,48 +44,72 @@ export class InvoicesService {
     const query = this.invoiceRepo.createQueryBuilder('invoice')
       .leftJoinAndSelect('invoice.lot', 'lot')
       .leftJoinAndSelect('invoice.import', 'import');
-  
+
     if (filter.nome) {
       query.andWhere('invoice.payer_name ILIKE :nome', { nome: `%${filter.nome}%` });
     }
-  
+
     if (filter.valor_inicial) {
       query.andWhere('invoice.amount >= :min', { min: filter.valor_inicial });
     }
-  
+
     if (filter.valor_final) {
       query.andWhere('invoice.amount <= :max', { max: filter.valor_final });
     }
-  
+
     if (filter.id_lote) {
       query.andWhere('lot.id = :id_lote', { id_lote: filter.id_lote });
     }
-  
+
     return query.getMany();
   }
 
   async gerarRelatorioPDF(filter: FilterInvoiceDto): Promise<string> {
     const boletos = await this.findAll(filter);
-  
+
     const PDFKit = require('pdfkit');
     const { default: getStream } = await import('get-stream');
     const stream = new PassThrough();
-  
     const doc = new PDFKit();
+
     doc.pipe(stream);
-  
-    doc.fontSize(14).text('Relatório de Boletos', { align: 'center' });
-    doc.moveDown();
-  
+
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    doc.fontSize(18).text('Relatório de Boletos', { align: 'center' });
+    doc.fontSize(12).text(`Emitido em: ${hoje}`, { align: 'center' });
+    doc.moveDown(1.5);
+
+    doc
+      .fontSize(12)
+      .text('Nome do Sacado', 50, doc.y, { continued: true })
+      .text('Lote', 100, doc.y, { continued: true })
+      .text('Valor (R$)', 180, doc.y, { continued: true })
+      .text('Linha Digitável', 230);
+    doc
+      .moveTo(50, doc.y + 5)
+      .lineTo(550, doc.y + 5)
+      .stroke();
+    doc.moveDown(0.5);
+
+    let currentY = doc.y;
+
     boletos.forEach((b) => {
-      doc.fontSize(10).text(
-        `${b.id} | ${b.payer_name} | ${b.lot.name} | R$ ${b.amount} | ${b.digitable_line}`,
-      );
+      doc
+        .fontSize(10)
+        .text(b.payer_name, 50, currentY)
+        .text(b.lot.name, 200, currentY)
+        .text(`R$ ${Number(b.amount).toFixed(2)}`, 280, currentY)
+        .fontSize(9)
+        .text(b.digitable_line, 370, currentY, {
+          width: 180,           // largura máxima
+          ellipsis: true        // evita quebrar
+        });
+    
+      currentY += 15;
     });
-  
+
     doc.end();
-  
     const buffer = await getStream.buffer(stream);
     return buffer.toString('base64');
-  }  
+  }
 }
