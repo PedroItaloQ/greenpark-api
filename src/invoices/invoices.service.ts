@@ -82,9 +82,9 @@ export class InvoicesService {
     doc
       .fontSize(12)
       .text('Nome do Sacado', 50, doc.y, { continued: true })
-      .text('Lote', 100, doc.y, { continued: true })
-      .text('Valor (R$)', 180, doc.y, { continued: true })
-      .text('Linha Digitável', 230);
+      .text('Lote', 200, doc.y, { continued: true })
+      .text('Valor (R$)', 280, doc.y, { continued: true })
+      .text('Linha Digitável', 330);
     doc
       .moveTo(50, doc.y + 5)
       .lineTo(550, doc.y + 5)
@@ -101,8 +101,8 @@ export class InvoicesService {
         .text(`R$ ${Number(b.amount).toFixed(2)}`, 280, currentY)
         .fontSize(9)
         .text(b.digitable_line, 370, currentY, {
-          width: 180,           // largura máxima
-          ellipsis: true        // evita quebrar
+          width: 180,
+          ellipsis: true
         });
     
       currentY += 15;
