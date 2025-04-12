@@ -1,98 +1,108 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Green Park - Desafio Técnico Backend NodeJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este é um projeto backend em **NestJS** com **TypeORM** e banco de dados SQL, que permite a importação de boletos 
+condominiais via arquivos CSV e PDF, bem como a geração de relatórios em PDF.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Tecnologias Utilizadas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NodeJS + NestJS
+- TypeScript
+- PostgreSQL (mas pode ser adaptado)
+- TypeORM
+- pdf-lib / pdfkit / get-stream
+- Multer para upload de arquivos
 
-## Project setup
+---
+
+## Instalação
 
 ```bash
-$ npm install
+# 1. Instale as dependências
+npm install
+
+# 2. Configure o banco de dados no arquivo .env
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=senha
+DB_DATABASE=database
+
+# 3. Rode as migrations (se tiver)
+npm run start:dev
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Endpoints Disponíveis
 
-# watch mode
-$ npm run start:dev
+### `/boletos`
 
-# production mode
-$ npm run start:prod
-```
+| Método | Rota                      | Descrição                                                              
+|--------|---------------------------|--------------------------------------------------------------------------
+| POST   | `/boletos`                | Cria um boleto manualmente                                              
+| GET    | `/boletos`                | Lista todos os boletos (com filtros)                                    
+| GET    | `/boletos?relatorio=1`    | Gera um PDF em base64 com os boletos filtrados                          
+| GET    | `/boletos?nome=...&valor_inicial=...&valor_final=...&id_lote=...` | Filtra boletos com base nos parâmetros                                
 
-## Run tests
+### `/lotes`
 
-```bash
-# unit tests
-$ npm run test
+| Método | Rota             | Descrição                                
+|--------|------------------|-------------------------------------------
+| POST   | `/lotes`         | Cria um novo lote                          
+| GET    | `/lotes`         | Lista todos os lotes                      
+| GET    | `/lotes/:id`     | Busca um lote pelo ID                     
+| PATCH  | `/lotes/:id`     | Atualiza um lote                          
+| DELETE | `/lotes/:id`     | Deleta um lote                            
 
-# e2e tests
-$ npm run test:e2e
+### `/importacoes`
 
-# test coverage
-$ npm run test:cov
-```
+| Método | Rota                              | Descrição                                                                      
+|--------|-----------------------------------|----------------------------------------------------------------------------------
+| POST   | `/importacoes`                    | Cria uma importação manual                                                     
+| POST   | `/importacoes/importar-csv`       | Faz upload de um `.csv` com os boletos                                          
+| POST   | `/importacoes/importar-pdf`       | Recebe um PDF com várias páginas e divide em arquivos individuais por boleto     
+| GET    | `/importacoes`                    | Lista todas as importações                                                   
+| GET    | `/importacoes?relatorio=1`        | Gera um relatório de boletos importados em PDF (base64)                        
+| GET    | `/importacoes/:id`                | Busca uma importação específica pelo ID                                      
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Como Testar
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Antes de importar o CSV, é obrigatório cadastrar os lotes (com nome no formato 0017, 0018, etc).
+rota: /lote
+body: 
+{
+  "name": "0017"
+}
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+2. Faça upload do arquivo CSV em `/importacoes/importar-csv` usando Postman ou Insomnia.
+3. Faça upload do arquivo PDF com os boletos em `/importacoes/importar-pdf`.
+4. Visualize os boletos via GET `/boletos` ou gere um relatório com `/boletos?relatorio=1`.
+5. Gerar Relatório em PDF (Base64) (Bom, ao gerar, o pdf com base64, voce pode testá-lo no seguinte site: https://base64.guru/converter/decode/pdf,
+    ou pode criar um arquivo (main.js) e colar o seguinte código: 
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+      # const fs = require('fs');
 
-## Resources
+      # const base64String = 'cole o pdf';
 
-Check out a few resources that may come in handy when working with NestJS:
+      # const buffer = Buffer.from(base64String, 'base64');
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+      # fs.writeFileSync('relatorio_boletos.pdf', buffer);
 
-## Support
+    ) 
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Observações Importantes
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- O sistema realiza o mapeamento de unidades (ex: 17, 18...) para lotes internos (ex: 0017, 0018...) automaticamente.
+- O PDF enviado é dividido página a página e nomeado conforme o ID do boleto correspondente.
+- O relatório gerado em PDF é retornado em base64 no formato JSON.
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
