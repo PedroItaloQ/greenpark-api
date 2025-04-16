@@ -86,39 +86,39 @@ export class ImportsService {
   async processPDF(file: Express.Multer.File) {
     try {
       const { PDFDocument } = await import('pdf-lib');
-  
+
       const ORDEM_FIXA_NOMES = ['MARCIA CARVALHO', 'JOSE DA SILVA', 'MARCOS ROBERTO'];
-  
+
       const boletos = await this.invoiceRepo.find({ relations: ['lot'] });
       if (!boletos.length) throw new NotFoundException('Nenhum boleto encontrado.');
-  
+
       const pdfBytes = fs.readFileSync(file.path);
       const pdfDoc = await PDFDocument.load(pdfBytes);
-  
+
       const outputDir = path.join(process.cwd(), 'boletos-pdf');
       if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-  
+
       const numPages = pdfDoc.getPageCount();
       const nomesValidos = ORDEM_FIXA_NOMES.slice(0, numPages);
-  
+
       for (let i = 0; i < nomesValidos.length; i++) {
         const nome = nomesValidos[i];
-  
+
         const boleto = boletos.find((b) => b.payer_name.toUpperCase() === nome.toUpperCase());
         if (!boleto) {
           console.warn(`Boleto com nome ${nome} não encontrado.`);
           continue;
         }
-  
+
         const newPdf = await PDFDocument.create();
         const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
         newPdf.addPage(copiedPage);
         const newPdfBytes = await newPdf.save();
-  
-        const outputFilePath = path.join(outputDir, `${boleto.id}.pdf`);
+
+        const outputFilePath = path.join(outputDir, `${i + 1}.pdf`);
         fs.writeFileSync(outputFilePath, newPdfBytes);
       }
-  
+
       return {
         mensagem: 'PDF dividido e salvo com sucesso',
         arquivos: nomesValidos.map((_, i) => `${i + 1}.pdf`),
@@ -128,7 +128,7 @@ export class ImportsService {
       throw new Error('Erro ao processar PDF: ' + err.message);
     }
   }
-  
+
 
   async gerarRelatorioPDF(): Promise<string> {
     const boletos = await this.invoiceRepo.find({
