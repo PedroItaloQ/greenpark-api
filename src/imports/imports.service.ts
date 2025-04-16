@@ -106,7 +106,7 @@ export class ImportsService {
   
         const boleto = boletos.find((b) => b.payer_name.toUpperCase() === nome.toUpperCase());
         if (!boleto) {
-          console.warn(`⚠️ Boleto com nome ${nome} não encontrado.`);
+          console.warn(`Boleto com nome ${nome} não encontrado.`);
           continue;
         }
   
